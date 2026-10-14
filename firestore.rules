@@ -1,0 +1,101 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // 1. Global Default-Deny Catch-All
+    match /{document=**} {
+      allow read, write: if false;
+    }
+
+    // Helper functions
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    function isOwner(userId) {
+      return isSignedIn() && request.auth.uid == userId;
+    }
+
+    function isValidId(id) {
+      return id is string && id.size() <= 128 && id.matches('^[a-zA-Z0-9_\\-]+$');
+    }
+
+    function isValidUserProfile(data) {
+      return data.name is string && data.name.size() > 0 && data.name.size() <= 100
+        && (data.email is string && data.email.size() <= 150)
+        && (!('course' in data) || (data.course is string && data.course.size() <= 150))
+        && (!('semester' in data) || (data.semester is string && data.semester.size() <= 50))
+        && (!('goal' in data) || (data.goal is string && data.goal.size() <= 200))
+        && (!('duration' in data) || (data.duration is string && data.duration.size() <= 20))
+        && (!('about' in data) || (data.about is string && data.about.size() <= 1000))
+        && (!('weeklyGoal' in data) || (data.weeklyGoal is number && data.weeklyGoal >= 0 && data.weeklyGoal <= 5000))
+        && (!('focus' in data) || (data.focus is string && data.focus.size() <= 100))
+        && (!('confidence' in data) || (data.confidence is string && data.confidence.size() <= 50));
+    }
+
+    function isValidQuizAttempt(data) {
+      return data.subject is string && data.subject.size() <= 100
+        && data.score is number && data.score >= 0 && data.score <= 100
+        && data.correct is number && data.correct >= 0
+        && data.total is number && data.total > 0
+        && data.day is string && data.day.size() <= 20
+        && (!('difficulty' in data) || (data.difficulty is string && data.difficulty.size() <= 50))
+        && (!('answers' in data) || (data.answers is list && data.answers.size() <= 100));
+    }
+
+    function isValidStudySession(data) {
+      return data.subject is string && data.subject.size() <= 100
+        && data.minutes is number && data.minutes > 0 && data.minutes <= 1440
+        && data.day is string && data.day.size() <= 20
+        && (!('note' in data) || (data.note is string && data.note.size() <= 500));
+    }
+
+    function isValidActivityItem(data) {
+      return data.title is string && data.title.size() <= 150
+        && data.detail is string && data.detail.size() <= 500
+        && data.day is string && data.day.size() <= 20
+        && (!('icon' in data) || (data.icon is string && data.icon.size() <= 20));
+    }
+
+    function isValidAIConversation(data) {
+      return data.subject is string && data.subject.size() <= 100
+        && data.question is string && data.question.size() <= 2000
+        && data.answer is string && data.answer.size() <= 10000;
+    }
+
+    // Student profile document
+    match /users/{userId} {
+      allow get: if isOwner(userId);
+      allow create: if isOwner(userId) && isValidUserProfile(request.resource.data);
+      allow update: if isOwner(userId) && isValidUserProfile(request.resource.data);
+      allow delete: if isOwner(userId);
+
+      // Quiz attempts subcollection
+      match /quizzes/{quizId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(quizId) && isValidQuizAttempt(request.resource.data);
+        allow delete: if isOwner(userId);
+      }
+
+      // Study sessions subcollection
+      match /sessions/{sessionId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(sessionId) && isValidStudySession(request.resource.data);
+        allow delete: if isOwner(userId);
+      }
+
+      // Activity logs subcollection
+      match /activity/{activityId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(activityId) && isValidActivityItem(request.resource.data);
+        allow delete: if isOwner(userId);
+      }
+
+      // AI Tutor conversation logs subcollection
+      match /ai_conversations/{convId} {
+        allow get, list: if isOwner(userId);
+        allow create: if isOwner(userId) && isValidId(convId) && isValidAIConversation(request.resource.data);
+        allow delete: if isOwner(userId);
+      }
+    }
+  }
+}

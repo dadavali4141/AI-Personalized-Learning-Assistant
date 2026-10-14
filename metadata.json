@@ -1,0 +1,8 @@
+{
+  "name": "LearnAI — AI-Powered Personalized Learning Assistant",
+  "description": "Personalized learning assistant aligned with UN SDG 4 (Quality Education) featuring diagnostic quizzes, study coach, AI tutor, progress analytics, and persistent learning streaks.",
+  "requestFramePermissions": [],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}

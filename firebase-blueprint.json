@@ -1,0 +1,105 @@
+{
+  "entities": {
+    "UserProfile": {
+      "title": "UserProfile",
+      "description": "Student profile and learning preferences",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "name": { "type": "string", "maxLength": 100 },
+        "email": { "type": "string", "maxLength": 150 },
+        "course": { "type": "string", "maxLength": 150 },
+        "semester": { "type": "string", "maxLength": 50 },
+        "goal": { "type": "string", "maxLength": 200 },
+        "duration": { "type": "string", "maxLength": 20 },
+        "about": { "type": "string", "maxLength": 1000 },
+        "weeklyGoal": { "type": "number" },
+        "focus": { "type": "string", "maxLength": 100 },
+        "confidence": { "type": "string", "maxLength": 50 },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["name", "email"]
+    },
+    "QuizAttempt": {
+      "title": "QuizAttempt",
+      "description": "Completed quiz attempt with scores and answers",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "subject": { "type": "string", "maxLength": 100 },
+        "difficulty": { "type": "string", "maxLength": 50 },
+        "score": { "type": "number" },
+        "correct": { "type": "number" },
+        "total": { "type": "number" },
+        "answers": { "type": "array" },
+        "createdAt": { "type": "string" },
+        "day": { "type": "string", "maxLength": 20 }
+      },
+      "required": ["subject", "score", "correct", "total", "day"]
+    },
+    "StudySession": {
+      "title": "StudySession",
+      "description": "Logged study session time and topic notes",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "subject": { "type": "string", "maxLength": 100 },
+        "minutes": { "type": "number" },
+        "note": { "type": "string", "maxLength": 500 },
+        "createdAt": { "type": "string" },
+        "day": { "type": "string", "maxLength": 20 }
+      },
+      "required": ["subject", "minutes", "day"]
+    },
+    "ActivityItem": {
+      "title": "ActivityItem",
+      "description": "Recent learning activity event log",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "title": { "type": "string", "maxLength": 150 },
+        "detail": { "type": "string", "maxLength": 500 },
+        "icon": { "type": "string", "maxLength": 20 },
+        "createdAt": { "type": "string" },
+        "day": { "type": "string", "maxLength": 20 }
+      },
+      "required": ["title", "detail", "day"]
+    },
+    "AIConversation": {
+      "title": "AIConversation",
+      "description": "Stored interaction between student and AI Tutor",
+      "type": "object",
+      "properties": {
+        "userId": { "type": "string" },
+        "subject": { "type": "string", "maxLength": 100 },
+        "question": { "type": "string", "maxLength": 2000 },
+        "answer": { "type": "string", "maxLength": 10000 },
+        "createdAt": { "type": "string" }
+      },
+      "required": ["subject", "question", "answer"]
+    }
+  },
+  "firestore": {
+    "/users/{userId}": {
+      "schema": "UserProfile",
+      "description": "Student profile document matching their authenticated UID"
+    },
+    "/users/{userId}/quizzes/{quizId}": {
+      "schema": "QuizAttempt",
+      "description": "Quiz attempts belonging to the student"
+    },
+    "/users/{userId}/sessions/{sessionId}": {
+      "schema": "StudySession",
+      "description": "Study sessions logged by the student"
+    },
+    "/users/{userId}/activity/{activityId}": {
+      "schema": "ActivityItem",
+      "description": "Activity stream items for the student"
+    },
+    "/users/{userId}/ai_conversations/{convId}": {
+      "schema": "AIConversation",
+      "description": "AI Tutor questions and explanations for the student"
+    }
+  }
+}
